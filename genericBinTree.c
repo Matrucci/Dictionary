@@ -1,7 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
-#include "result.h"
 #include "genericBinTree.h"
 
 typedef struct BinTree {
@@ -21,7 +20,7 @@ static int isEmpty(BinTree* root) {
     return 0;
 }
 
-BinTree* createBinTree(BinTreeFunctions funcs) {
+BinTree* create_bin_tree(BinTreeFunctions funcs) {
     BinTree* root = malloc(sizeof(BinTree));
     if (root == NULL) {
         return NULL;
@@ -33,46 +32,37 @@ BinTree* createBinTree(BinTreeFunctions funcs) {
     return root;
 }
 
-BinTree* findInBinTree(BinTree* root, Ptr val) {
+BinTree* find_in_bin_tree(BinTree* root, Ptr val) {
     if (isEmpty(root)) {
         return NULL;
     }
     if (root->funcs.compare(root->val, val) > 0) {
-        return findInBinTree(root->left, val);
+        return find_in_bin_tree(root->left, val);
     }
     if (root->funcs.compare(root->val, val) < 0) {
-        return findInBinTree(root->right, val);
+        return find_in_bin_tree(root->right, val);
     }
     return root;
 }
 
-Ptr createCopyOfValueInRoot(BinTree* root) {
-    if (root == NULL) {
-        return NULL;
-    }
-    Ptr ptr = root->funcs.allocate();
-    root->funcs.copy(ptr, root->val);
-    return ptr;
-}
-
-int sizeOfBinTree(BinTree* root) {
+int size_of_bin_tree(BinTree* root) {
     if (isEmpty(root)) {
         return 0;
     }
-    return 1 + sizeOfBinTree(root->left) + sizeOfBinTree(root->right);
+    return 1 + size_of_bin_tree(root->left) + size_of_bin_tree(root->right);
 }
 
-void destroyBinTree(BinTree* root) {
+void destroy_bin_tree(BinTree* root) {
     if (root == NULL) {
         return;
     }
-	destroyBinTree(root->left);
-    destroyBinTree(root->right);
+    destroy_bin_tree(root->left);
+    destroy_bin_tree(root->right);
     root->funcs.destroy(root->val);
     free(root);
 }
 
-Result addToBinTree(BinTree* root, Ptr val) {
+Result add_to_bin_tree(BinTree* root, Ptr val) {
     if (root == NULL) {
         return FAILURE;
     }
@@ -82,54 +72,57 @@ Result addToBinTree(BinTree* root, Ptr val) {
             return MEM_ERROR;
         }
         root->funcs.copy(root->val, val);
-        return SUCCESS;
+        return SUCEESS;
     }
     if (root->funcs.compare(root->val, val) > 0) {
         if (root->left != NULL) {
-            return addToBinTree(root->left, val);
+            return add_to_bin_tree(root->left, val);
         }
-        root->left = createBinTree(root->funcs);
+        root->left = create_bin_tree(root->funcs);
         if (root->left == NULL) {
             return MEM_ERROR;
         } else {
             root->left->val = root->funcs.allocate();
             if (root->left->val == NULL) {
-                destroyBinTree(root->left);
+                destroy_bin_tree(root->left);
                 return MEM_ERROR;
             }
             root->funcs.copy(root->left->val, val);
-            return SUCCESS;
+            return SUCEESS;
         }
     }
     if (root->funcs.compare(root->val, val) < 0) {
         if (root->right != NULL) {
-            return addToBinTree(root->right, val);
+            return add_to_bin_tree(root->right, val);
         }
-        root->right = createBinTree(root->funcs);
+        root->right = create_bin_tree(root->funcs);
         if (root->right == NULL) {
             return MEM_ERROR;
         } else {
             root->right->val = root->funcs.allocate();
             if (root->right->val == NULL) {
-                destroyBinTree(root->right);
+                destroy_bin_tree(root->right);
                 return MEM_ERROR;
             }
             root->funcs.copy(root->right->val, val);
-            return SUCCESS;
+            return SUCEESS;
         }
     }
     return FAILURE;
 }
 
-BinTree* createBinTreeFromArr(BinTreeFunctions funcs, Ptr arr[], int size) {
-    BinTree* root = createBinTree(funcs);
+BinTree* create_bin_tree_from_arr(BinTreeFunctions funcs, Ptr arr[], int size) {
+    if (size == 0) {
+        return NULL;
+    }
+    BinTree* root = create_bin_tree(funcs);
     if (root == NULL) {
         return NULL;
     }
     for (int i = 0; i < size; i++) {
-        Result result = addToBinTree(root, arr[i]);
-        if (result != SUCCESS) {
-            destroyBinTree(root);
+        Result result = add_to_bin_tree(root, arr[i]);
+        if (result != SUCEESS) {
+            destroy_bin_tree(root);
             return NULL;
         }
     }
@@ -139,64 +132,62 @@ BinTree* createBinTreeFromArr(BinTreeFunctions funcs, Ptr arr[], int size) {
 static int arr_from_tree_pre_order(BinTree* root, Ptr arr[], int size, int last);
 static Result remove_from_arr(BinTreeFunctions funcs, Ptr arr[], int size, Ptr val);
 
-Result removeFromBinTree(BinTree** rootPtr, Ptr val) {
-	assert(rootPtr != NULL);
-	BinTree* root = *rootPtr;
-	//printf("\nPROBABLY HERE\n");
-	if (!findInBinTree(root, val)) {
-		return FAILURE;
-	}
-	int size = sizeOfBinTree(root);
-	Ptr* arr = malloc(size * sizeof(Ptr));
-	if (arr == NULL) {
-		return MEM_ERROR;
-	}
-	int last = arr_from_tree_pre_order(root, arr, size, -1);
-	assert(last == size - 1);
+Result remove_from_bin_tree(BinTree** rootPtr, Ptr val) {
+    assert(rootPtr != NULL);
+    BinTree* root = *rootPtr;
+    if (!find_in_bin_tree(root, val)) {
+        return FAILURE;
+    }
+    int size = size_of_bin_tree(root);
+    Ptr* arr = malloc(size * sizeof(Ptr));
+    if (arr == NULL) {
+        return MEM_ERROR;
+    }
+    int last = arr_from_tree_pre_order(root, arr, size, -1);
+    assert(last == size - 1);
 
-	Result result = remove_from_arr(root->funcs, arr, size, val);
-	assert(result == SUCCESS);
+    Result result = remove_from_arr(root->funcs, arr, size, val);
+    assert(result == SUCEESS);
 
-	BinTree* new_root = createBinTreeFromArr(root->funcs, arr, size - 1);
-	for (int i = 0; i < size - 1; i++) {
-		root->funcs.destroy(arr[i]);
-	}
-	free(arr);
+    BinTree* new_root = create_bin_tree_from_arr(root->funcs, arr, size-1);
+    for (int i = 0; i < size-1; i++) {
+        root->funcs.destroy(arr[i]);
+    }
+    free(arr);
 
-	if (new_root == NULL) {
-		return MEM_ERROR;
-	}
+    if (new_root == NULL) {
+        return MEM_ERROR;
+    }
 
-	destroyBinTree(*rootPtr);
-	*rootPtr = new_root;
-	return SUCCESS;
+    destroy_bin_tree(*rootPtr);
+    *rootPtr = new_root;
+    return SUCEESS;
 }
 
-
-void printPreOrder(BinTree* root) {
+void print_pre_order(BinTree* root) {
     if (isEmpty(root)) {
         return;
     }
     root->funcs.print(root->val);
-    printPreOrder(root->left);
-    printPreOrder(root->right);
+    print_pre_order(root->left);
+    print_pre_order(root->right);
 }
 
-void printInOrder(BinTree* root) {
+void print_in_order(BinTree* root) {
     if (isEmpty(root)) {
         return;
     }
-    printInOrder(root->left);
+    print_in_order(root->left);
     root->funcs.print(root->val);
-    printInOrder(root->right);
+    print_in_order(root->right);
 }
 
-void printPostOrder(BinTree* root) {
+void print_post_order(BinTree* root) {
     if (isEmpty(root)) {
         return;
     }
-    printPostOrder(root->left);
-    printPostOrder(root->right);
+    print_post_order(root->left);
+    print_post_order(root->right);
     root->funcs.print(root->val);
 }
 
@@ -228,5 +219,12 @@ static Result remove_from_arr(BinTreeFunctions funcs, Ptr arr[], int size, Ptr v
         arr[i] = arr[i+1];
     }
     arr[size-1] = NULL;
-    return SUCCESS;
+    return SUCEESS;
+}
+
+Ptr get_value_in_root(BinTree* root) {
+    if (root == NULL) {
+        NULL;
+    }
+    return root->val;
 }
