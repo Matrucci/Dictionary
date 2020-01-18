@@ -1,9 +1,14 @@
 #ifndef __INT_FUNC_H
 #define __INT_FUNC_H
 
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/genericBinTree.h"
+#include "genericBinTree.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+typedef struct KeyValue {
+	int key;
+	int value;
+} KeyValue;
 
 Ptr allocate_keyValue();
 void destroy_keyValue(Ptr p);

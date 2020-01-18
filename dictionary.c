@@ -1,31 +1,32 @@
+/**************
+*Matan Saloniko
+*318570769
+*01
+*ass06
+**************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/genericBinTree.h"
-//#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/genericBinTree.c"
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/result.h"
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/dictionary.h"
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/genericSort.h"
+#include "result.h"
+#include "genericSort.h"
 #include "intFunctions.h"
-
-typedef struct BinTree {
-	Ptr val;
-	struct BinTree* left;
-	struct BinTree* right;
-	BinTreeFunctions funcs;
-} BinTree;
-
 
 typedef struct Dictionary {
 	BinTree* dicTree;
 } Dictionary;
 
-typedef struct KeyValue {
-	int key; 
-	int value;
-} KeyValue;
+Result removeFromDictionary(Dictionary* d, int key);
 
+/*****************************************************************************
+*Function name: initDictionary.
+*Input: None.
+*Output: Dictionary* (a pointer to Dictionary, if malloc fails, returns NULL).
+*Function operation: The function initializes a Dictionary with a pointer
+					 to a BinTree.
+					 If one of the functions fails, we free the memory.
+*****************************************************************************/
 Dictionary* initDictionary() {
 	Dictionary* dictionary = (Dictionary*)malloc(sizeof(Dictionary));
 	if (dictionary != NULL) {
@@ -38,108 +39,127 @@ Dictionary* initDictionary() {
 	return NULL;
 }
 
+/*****************************************************************************
+*Function name: destroyDictionary.
+*Input: Dictionary* d.
+*Output: None.
+*Function operation: The function frees all the memory taken by the dictionary.
+					 (BinTree* and the dictionary itself.)
+*****************************************************************************/
 void destroyDictionary(Dictionary* d) {
-	printInOrder(d->dicTree);
-	/*
-	if (d->dicTree != NULL) {
-		destroyBinTree(d->dicTree);
-	}
 	if (d != NULL) {
+		if (d->dicTree != NULL) {
+			destroyBinTree(d->dicTree);
+		}
 		free(d);
 	}
-	*/
 }
 
+/*****************************************************************************
+*Function name: sizeOfDictionary.
+*Input: Dictionary* d.
+*Output: int (if the dictionary is empty, return 0).
+*Function operation: The function checks and returns the size of the dictionary.
+*****************************************************************************/
 int sizeOfDictionary(Dictionary* d) {
+	if (d == NULL) {
+		return 0;
+	}
 	return sizeOfBinTree(d->dicTree);
 }
 
+/*****************************************************************************
+*Function name: putInDictionary.
+*Input: Dictionary* d, int key, int value.
+*Output: Result (enum) {SUCCESS, FAILURE, MEM_ERROR} .
+*Function operation: The function adds a key and a value to the dictionary.
+					 If the key is already in the dictionary, replace the value.
+*****************************************************************************/
 Result putInDictionary(Dictionary* d, int key, int value) {
 	KeyValue keyValue;
 	keyValue.key = key;
 	keyValue.value = value;
 	Result result = addToBinTree(d->dicTree, &keyValue);
-	/*
-	KeyValue* keyValue = (KeyValue*)malloc(sizeof(KeyValue));
-	if (keyValue != NULL) {
-		keyValue->key = key;
-		keyValue->value = value;
-		Result result = addToBinTree(d->dicTree, keyValue);
-		free(keyValue);
+	if (result == FAILURE) {
+		result = removeFromDictionary(d, key);
+		result = putInDictionary(d, key, value);
 		return result;
 	}
-	return MEM_ERROR;
-	*/
+	return result;
 }
 
+/*****************************************************************************
+*Function name: getFromDictionary.
+*Input: Dictionary* d, int key.
+*Output: int (The value the key holds).
+*Function operation: The function finds the value of the given key.
+					 If a value isn't found, return 0.
+*****************************************************************************/
 int getFromDictionary(Dictionary* d, int key) {
 	KeyValue keyValue;
 	keyValue.key = key;
 	BinTree* treeTemp = findInBinTree(d->dicTree, &keyValue);
 	if (treeTemp != NULL) {
-		KeyValue* keyTemp = treeTemp->val;
-		return keyTemp->value;
-	}
-	/*
-	KeyValue* keyValue = (KeyValue*)malloc(sizeof(KeyValue));
-	if (keyValue != NULL) {
-		keyValue->key = key;
-		BinTree* treeTemp = findInBinTree(d->dicTree, keyValue);
-		if (treeTemp != NULL) {
-			keyValue = treeTemp->val;
-			int v = keyValue->value;
-			free(keyValue);
-			return v;
+		KeyValue* keyTemp = (KeyValue*)createCopyOfValueInRoot(treeTemp);
+		if (keyTemp == NULL) {
+			return 0;
 		}
-		return 0;
-		//destroyBinTree(treeTemp);
+		int val = keyTemp->value;
+		free(keyTemp);
+		return val;
 	}
 	return 0;
-	*/
 }
 
+/*****************************************************************************
+*Function name: initDictionary.
+*Input: None.
+*Output: Dictionary* (a pointer to Dictionary, if malloc fails, returns NULL).
+*Function operation: The function initializes a Dictionary with a pointer
+					 to a BinTree.
+					 If one of the functions fails, we free the memory.
+*****************************************************************************/
 Result removeFromDictionary(Dictionary* d, int key) {
 	KeyValue keyValue;
 	keyValue.key = key;
-	Result result = removeFromBinTree(d, &keyValue);
+	BinTree** binTreeTemp = &(d->dicTree);
+	Result result = removeFromBinTree(binTreeTemp, &keyValue);
 	return result;
-	/*
-	KeyValue* keyValue = (KeyValue*)malloc(sizeof(KeyValue));
-	if (keyValue != NULL) {
-		keyValue->key = key;
-		Result result = removeFromBinTree(&(d->dicTree), keyValue);
-		free(keyValue);
-		return result;
-	}
-	return MEM_ERROR;
-	*/
 }
 
+/*****************************************************************************
+*Function name: initDictionary.
+*Input: None.
+*Output: Dictionary* (a pointer to Dictionary, if malloc fails, returns NULL).
+*Function operation: The function initializes a Dictionary with a pointer
+					 to a BinTree.
+					 If one of the functions fails, we free the memory.
+*****************************************************************************/
 void printDictionary(Dictionary* d) {
 	printf("{");
 	printInOrder(d->dicTree);
 	printf("}");
 }
 
-//BinTree* createBinTreeFromArr(BinTreeFunctions funcs, Ptr arr[], int size);
-
-/*
+/*****************************************************************************
+*Function name: initDictionary.
+*Input: None.
+*Output: Dictionary* (a pointer to Dictionary, if malloc fails, returns NULL).
+*Function operation: The function initializes a Dictionary with a pointer
+					 to a BinTree.
+					 If one of the functions fails, we free the memory.
+*****************************************************************************/
 Dictionary* createDictionaryFromArrays(int keys[], int values[], int size) {
-	Dictionary* dic = initDictionary();
-	if (dic == NULL) {
+	Dictionary* d = initDictionary();
+	if (d == NULL) {
 		return NULL;
 	}
-	KeyValue** keyValues;
-	if (keyValues != NULL) {
-		int j = 0;
-		for (int i = 0; i < size; i++) {
-			keyValues[j] = keys[i];
-			j++;
-			keyValues[j] = values[i];
-			j++;
-		}
-		dic->dicTree = createBinTreeFromArr(int_funcs, keyValues, size);
-		free(keyValues);
+	for (int i = 0; i < size; i++) {
+		putInDictionary(d, keys[i], values[i]);
 	}
-	return dic;
-}*/
+	if (d->dicTree == NULL) {
+		destroyDictionary(d);
+		return NULL;
+	}
+	return d;
+}

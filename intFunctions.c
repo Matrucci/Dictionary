@@ -1,4 +1,4 @@
-#include "C:/Users/Matan/Desktop/ITC/ass6/ass6/genericBinTree.h"
+#include "genericBinTree.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -16,12 +16,12 @@ void destroy_keyValue(Ptr p) {
 void copy_keyValue(Ptr p1, Ptr p2) {
 	KeyValue* i1 = (KeyValue*)p1;
 	KeyValue* i2 = (KeyValue*)p2;
-	*i1 = *i2;
+	i1->key = i2->key;
+	i1->value = i2->value;
 }
 int compare_keyValue(Ptr p1, Ptr p2) {
 	KeyValue* i1 = (KeyValue*)p1;
 	KeyValue* i2 = (KeyValue*)p2;
-	//printf("HELLO:: %d::%d\n", i1->key, i2->key);
 	return i1->key - i2->key;
 }
 void print_keyValue(Ptr p) {
